@@ -7,7 +7,12 @@ import numpy as np
 from typing import Dict, List, Optional, Tuple
 from loguru import logger
 from scipy.spatial.distance import euclidean
-from fastdtw import fastdtw
+try:
+    from fastdtw import fastdtw
+    HAS_FASTDTW = True
+except ImportError:
+    HAS_FASTDTW = False
+    logger.warning("fastdtw not installed. Historical pattern matching will use simplified method.")
 
 
 class PatternMatcher:
@@ -291,13 +296,18 @@ class PatternMatcher:
 
         try:
             for idx, hist_pattern in enumerate(historical_patterns):
-                # Use Dynamic Time Warping for pattern matching
-                distance, _ = fastdtw(current_pattern.reshape(-1, 1),
-                                     hist_pattern.reshape(-1, 1),
-                                     dist=euclidean)
-
-                # Normalize distance by pattern length
-                normalized_distance = distance / len(current_pattern)
+                if HAS_FASTDTW:
+                    # Use Dynamic Time Warping for pattern matching
+                    distance, _ = fastdtw(current_pattern.reshape(-1, 1),
+                                         hist_pattern.reshape(-1, 1),
+                                         dist=euclidean)
+                    normalized_distance = distance / len(current_pattern)
+                else:
+                    # Fallback to simple euclidean distance
+                    if len(current_pattern) != len(hist_pattern):
+                        continue
+                    distance = euclidean(current_pattern, hist_pattern)
+                    normalized_distance = distance / len(current_pattern)
 
                 if normalized_distance <= threshold:
                     similar_patterns.append((idx, normalized_distance))

@@ -1,10 +1,9 @@
 """
 Technical Indicators Calculator
-Uses pandas-ta for technical analysis
+Implements technical indicators using pure pandas/numpy
 """
 
 import pandas as pd
-import pandas_ta as ta
 import numpy as np
 from typing import Dict, Optional
 from loguru import logger
@@ -12,6 +11,77 @@ from loguru import logger
 
 class TechnicalIndicators:
     """Calculate technical indicators for stock price data"""
+
+    @staticmethod
+    def calculate_sma(series: pd.Series, period: int) -> pd.Series:
+        """Simple Moving Average"""
+        return series.rolling(window=period).mean()
+
+    @staticmethod
+    def calculate_ema(series: pd.Series, period: int) -> pd.Series:
+        """Exponential Moving Average"""
+        return series.ewm(span=period, adjust=False).mean()
+
+    @staticmethod
+    def calculate_rsi(series: pd.Series, period: int = 14) -> pd.Series:
+        """Relative Strength Index"""
+        delta = series.diff()
+        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+        rs = gain / loss
+        rsi = 100 - (100 / (1 + rs))
+        return rsi
+
+    @staticmethod
+    def calculate_macd(series: pd.Series, fast: int = 12, slow: int = 26, signal: int = 9) -> Dict[str, pd.Series]:
+        """MACD indicator"""
+        ema_fast = series.ewm(span=fast, adjust=False).mean()
+        ema_slow = series.ewm(span=slow, adjust=False).mean()
+        macd_line = ema_fast - ema_slow
+        signal_line = macd_line.ewm(span=signal, adjust=False).mean()
+        histogram = macd_line - signal_line
+        return {
+            'macd': macd_line,
+            'macd_signal': signal_line,
+            'macd_histogram': histogram
+        }
+
+    @staticmethod
+    def calculate_bollinger_bands(series: pd.Series, period: int = 20, std_dev: int = 2) -> Dict[str, pd.Series]:
+        """Bollinger Bands"""
+        sma = series.rolling(window=period).mean()
+        std = series.rolling(window=period).std()
+        upper = sma + (std * std_dev)
+        lower = sma - (std * std_dev)
+        return {
+            'bb_upper': upper,
+            'bb_middle': sma,
+            'bb_lower': lower
+        }
+
+    @staticmethod
+    def calculate_atr(df: pd.DataFrame, period: int = 14) -> pd.Series:
+        """Average True Range"""
+        high_low = df['high'] - df['low']
+        high_close = np.abs(df['high'] - df['close'].shift())
+        low_close = np.abs(df['low'] - df['close'].shift())
+        ranges = pd.concat([high_low, high_close, low_close], axis=1)
+        true_range = ranges.max(axis=1)
+        atr = true_range.rolling(period).mean()
+        return atr
+
+    @staticmethod
+    def calculate_stochastic(high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14, smooth_k: int = 3, smooth_d: int = 3) -> Dict[str, pd.Series]:
+        """Stochastic Oscillator"""
+        lowest_low = low.rolling(window=period).min()
+        highest_high = high.rolling(window=period).max()
+        stoch_k = 100 * (close - lowest_low) / (highest_high - lowest_low)
+        stoch_k = stoch_k.rolling(window=smooth_k).mean()
+        stoch_d = stoch_k.rolling(window=smooth_d).mean()
+        return {
+            'stoch_k': stoch_k,
+            'stoch_d': stoch_d
+        }
 
     @staticmethod
     def calculate_all_indicators(price_df: pd.DataFrame) -> pd.DataFrame:
@@ -32,39 +102,36 @@ class TechnicalIndicators:
                 logger.warning(f"Not enough data for complete technical analysis. Have {len(df)} rows, need 200+")
 
             # Moving Averages
-            df['ma_50'] = ta.sma(df['close'], length=50)
-            df['ma_200'] = ta.sma(df['close'], length=200)
-            df['ema_20'] = ta.ema(df['close'], length=20)
+            df['ma_50'] = TechnicalIndicators.calculate_sma(df['close'], 50)
+            df['ma_200'] = TechnicalIndicators.calculate_sma(df['close'], 200)
+            df['ema_20'] = TechnicalIndicators.calculate_ema(df['close'], 20)
 
             # RSI
-            df['rsi'] = ta.rsi(df['close'], length=14)
+            df['rsi'] = TechnicalIndicators.calculate_rsi(df['close'], 14)
 
             # MACD
-            macd = ta.macd(df['close'])
-            if macd is not None and not macd.empty:
-                df['macd'] = macd.iloc[:, 0]
-                df['macd_signal'] = macd.iloc[:, 1]
-                df['macd_histogram'] = macd.iloc[:, 2]
+            macd = TechnicalIndicators.calculate_macd(df['close'])
+            df['macd'] = macd['macd']
+            df['macd_signal'] = macd['macd_signal']
+            df['macd_histogram'] = macd['macd_histogram']
 
             # Bollinger Bands
-            bbands = ta.bbands(df['close'], length=20, std=2)
-            if bbands is not None and not bbands.empty:
-                df['bollinger_upper'] = bbands.iloc[:, 0]
-                df['bollinger_mid'] = bbands.iloc[:, 1]
-                df['bollinger_lower'] = bbands.iloc[:, 2]
+            bbands = TechnicalIndicators.calculate_bollinger_bands(df['close'], 20, 2)
+            df['bollinger_upper'] = bbands['bb_upper']
+            df['bollinger_mid'] = bbands['bb_middle']
+            df['bollinger_lower'] = bbands['bb_lower']
 
             # Volume indicators
-            df['volume_sma_20'] = ta.sma(df['volume'], length=20)
+            df['volume_sma_20'] = TechnicalIndicators.calculate_sma(df['volume'], 20)
             df['volume_ratio'] = df['volume'] / df['volume_sma_20']
 
             # ATR (Average True Range) - for volatility
-            df['atr'] = ta.atr(df['high'], df['low'], df['close'], length=14)
+            df['atr'] = TechnicalIndicators.calculate_atr(df, 14)
 
             # Stochastic Oscillator
-            stoch = ta.stoch(df['high'], df['low'], df['close'])
-            if stoch is not None and not stoch.empty:
-                df['stoch_k'] = stoch.iloc[:, 0]
-                df['stoch_d'] = stoch.iloc[:, 1]
+            stoch = TechnicalIndicators.calculate_stochastic(df['high'], df['low'], df['close'])
+            df['stoch_k'] = stoch['stoch_k']
+            df['stoch_d'] = stoch['stoch_d']
 
             return df
 
