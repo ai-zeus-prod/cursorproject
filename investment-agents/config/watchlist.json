@@ -1,0 +1,33 @@
+{
+  "stocks": [
+    "TCS.NS",
+    "INFY.NS",
+    "HDFCBANK.NS",
+    "RELIANCE.NS",
+    "ICICIBANK.NS",
+    "SBIN.NS",
+    "BHARTIARTL.NS",
+    "ITC.NS",
+    "KOTAKBANK.NS",
+    "LT.NS",
+    "AXISBANK.NS",
+    "WIPRO.NS",
+    "HCLTECH.NS",
+    "MARUTI.NS",
+    "TITAN.NS",
+    "ASIANPAINT.NS",
+    "SUNPHARMA.NS",
+    "ULTRACEMCO.NS",
+    "NESTLEIND.NS",
+    "BAJFINANCE.NS"
+  ],
+  "sectors": [
+    "IT",
+    "Banking",
+    "Pharma",
+    "Automobile",
+    "FMCG",
+    "Infrastructure"
+  ],
+  "notes": "NSE stocks use .NS suffix, BSE stocks use .BO suffix"
+}

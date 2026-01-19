@@ -1,0 +1,111 @@
+{
+  "fundamental": {
+    "min_roe": 15,
+    "max_pe": 30,
+    "max_debt_equity": 0.5,
+    "min_revenue_growth": 15,
+    "min_profit_margin": 10,
+    "min_market_cap": 10000000000,
+    "notes": "ROE in %, PE ratio, Debt/Equity ratio, Revenue growth YoY %, Profit margin %, Market cap in INR"
+  },
+  "technical": {
+    "min_rsi": 45,
+    "max_rsi": 65,
+    "require_above_50ma": true,
+    "require_above_200ma": true,
+    "min_volume_ratio": 1.5,
+    "ma_trend_days": 20,
+    "notes": "RSI range, Moving average requirements, Volume ratio vs average, MA uptrend check days"
+  },
+  "pattern_matching": {
+    "enabled": true,
+    "lookback_days": 1825,
+    "min_confidence": 0.65,
+    "patterns": [
+      "cup_and_handle",
+      "consolidation_breakout",
+      "pullback_to_ma",
+      "volume_surge"
+    ],
+    "notes": "Historical pattern matching over 5 years (1825 days)"
+  },
+  "scoring": {
+    "fundamental_weight": 0.5,
+    "technical_weight": 0.3,
+    "sentiment_weight": 0.2,
+    "min_total_score": 75,
+    "high_conviction_score": 85,
+    "notes": "Weights must sum to 1.0, Scores out of 100"
+  },
+  "risk_management": {
+    "default_stop_loss": 0.07,
+    "target_return": 0.20,
+    "max_position_size": 25000,
+    "max_positions": 10,
+    "max_sector_allocation": 0.30,
+    "trailing_stop_trigger": 0.15,
+    "trailing_stop_distance": 0.10,
+    "notes": "Stop loss 7%, Target 20%, Position sizes in INR, Max 30% in one sector"
+  },
+  "entry_conditions": {
+    "avoid_earnings_window_days": 7,
+    "max_vix_level": 25,
+    "require_market_uptrend": true,
+    "min_sector_performance": -5,
+    "notes": "Don't enter 7 days before earnings, VIX < 25, Market uptrend, Sector not down >5%"
+  },
+  "exit_conditions": {
+    "validation_timeline": {
+      "day_7_min_return": 0.02,
+      "day_14_min_return": 0.05,
+      "day_30_review": true,
+      "max_hold_days": 90
+    },
+    "force_exit_triggers": [
+      "stop_loss_hit",
+      "target_reached",
+      "fundamental_breakdown",
+      "technical_breakdown",
+      "max_hold_exceeded"
+    ],
+    "notes": "Validation checkpoints at 7, 14, 30 days. Max hold 90 days regardless."
+  },
+  "investment_philosophy": {
+    "frameworks": [
+      {
+        "name": "Warren Buffett",
+        "criteria": [
+          "Strong competitive moat",
+          "Capable management",
+          "Consistent earnings",
+          "Trading below intrinsic value"
+        ],
+        "weight": 0.4
+      },
+      {
+        "name": "Peter Lynch",
+        "criteria": [
+          "PEG ratio < 1.5",
+          "Understandable business",
+          "Strong growth prospects",
+          "Reasonable valuation"
+        ],
+        "weight": 0.3
+      },
+      {
+        "name": "William O'Neil CAN SLIM",
+        "criteria": [
+          "Current earnings growth",
+          "Annual earnings growth",
+          "New highs",
+          "Supply and demand",
+          "Leader not laggard",
+          "Institutional sponsorship",
+          "Market direction"
+        ],
+        "weight": 0.3
+      }
+    ],
+    "notes": "Multi-framework approach weighted by importance"
+  }
+}
