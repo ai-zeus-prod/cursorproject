@@ -3,6 +3,10 @@ Agent 1: Data Collector
 Fetches and stores market data for all stocks in watchlist
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import argparse
 from datetime import datetime, timedelta
 from typing import List

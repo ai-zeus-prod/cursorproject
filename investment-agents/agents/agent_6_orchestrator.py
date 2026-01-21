@@ -3,6 +3,9 @@ Agent 6: Decision Orchestrator
 Combines fundamental and technical analysis to generate investment recommendations
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 import argparse
 from datetime import datetime
 from typing import Dict, Optional

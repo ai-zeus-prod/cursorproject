@@ -3,6 +3,9 @@ Agent 2: Fundamental Analysis
 Analyzes fundamental metrics and scores stocks
 """
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
 import argparse
 from datetime import datetime
 from typing import Dict, Optional
